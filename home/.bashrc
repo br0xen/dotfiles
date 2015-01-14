@@ -2,11 +2,15 @@ set -o vi
 bind -m vi-insert "\C-l":clear-screen
 HOSTNAME=`hostname`
 
+GIT_PROMPT=0
 GIT_PS1_SHOWUPSTREAM="auto"
 UNAME=`uname`
 if [ $UNAME = "Darwin" ] ; then
 # Darwin specific
-  source /Library/Developer/CommandLineTools/usr/share/git-core/git-prompt.sh
+  if [ -f /Library/Developer/CommandLineTools/usr/share/git-core/git-prompt.sh ] ; then
+    source /Library/Developer/CommandLineTools/usr/share/git-core/git-prompt.sh
+    GIT_PROMPT=1
+  fi
 
   export GOPATH=$HOME/Development/go
   export ANDROID_HOME=/Users/brbuller/Development/android/android-sdk-macosx
@@ -24,24 +28,31 @@ if [ $UNAME = "Darwin" ] ; then
 elif [ $UNAME = "Linux" ]; then
   PATH=/usr/local/sbin:$PATH
   JAVA_HOME=/usr/local/etc/jdk1.8.0_25
-  source /usr/local/sbin/git-prompt.sh
+  if [ -f /usr/local/sbin/git-prompt.sh ] ; then
+    source /usr/local/sbin/git-prompt.sh
+    GIT_PROMPT=1
+  fi
 fi
-
+export GIT_PROMPT
 
 __br0xen_ps1() {
-  g_branch=$(git branch &>/dev/null;\
-    if [ $? -eq 0 ]; then
-      echo "$(echo `git status` | grep "nothing to commit" > /dev/null 2>&1;
-        if [ "$?" -eq "0" ]; then
-          # @4 - Clean repository - nothing to commit
-          echo "\[\033[0;32m\]"$(__git_ps1 "(%s o)");
-        else
-          # @5 - Changes to working tree
-          echo "\[\033[0;91m\]"$(__git_ps1 "{%s x}");
-        fi)"
-  fi)
+  if [ $GIT_PROMPT == 1 ] ; then
+    g_branch=$(git branch &>/dev/null;\
+      if [ $? -eq 0 ]; then
+        echo "$(echo `git status` | grep "nothing to commit" > /dev/null 2>&1;
+          if [ "$?" -eq "0" ]; then
+            # @4 - Clean repository - nothing to commit
+            echo "\[\033[0;32m\]"$(__git_ps1 "(%s o)");
+          else
+            # @5 - Changes to working tree
+            echo "\[\033[0;91m\]"$(__git_ps1 "{%s x}");
+          fi)"
+    fi)
+    export PS1="\[\033[1;34m\]\!\[\033[0m\] \[\033[0;93m\]\w\[\033[0m\] $g_branch\$ \[\033[0m\]" 
+  else 
+    export PS1="\[\033[1;34m\]\!\[\033[0m\] \[\033[0;93m\]\w\[\033[0m\] \$ \[\033[0m\]" 
+  fi
 
-  export PS1="\[\033[1;34m\]\!\[\033[0m\] \[\033[0;93m\]\w\[\033[0m\] $g_branch\$ \[\033[0m\]" 
 }
 
 PROMPT_COMMAND='__br0xen_ps1'
