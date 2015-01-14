@@ -60,3 +60,4 @@ PROMPT_COMMAND='__br0xen_ps1'
 
 source "$HOME/.homesick/repos/homeshick/homeshick.sh"
 source "$HOME/.homesick/repos/homeshick/completions/homeshick-completion.bash"
+homeshick --quiet refresh
